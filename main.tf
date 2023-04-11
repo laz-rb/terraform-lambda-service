@@ -21,7 +21,7 @@ resource "aws_iam_role" "this" {
 resource "aws_lambda_function" "this" {
   function_name = var.name
   runtime       = var.runtime
-  role          = aws_iam_role.lambda_role.arn
+  role          = aws_iam_role.this.arn
   handler       = var.handler
   filename      = var.filename
 }
