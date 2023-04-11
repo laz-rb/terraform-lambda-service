@@ -52,3 +52,8 @@ variable "apigateway_route_key" {
   description = "Route key for the route. For HTTP APIs, the route key can be a combination of an HTTP method and resource path, for example, GET /pets"
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "Tags applied to all resources."
+  default     = {}
+}
