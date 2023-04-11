@@ -10,8 +10,6 @@ data "aws_iam_policy_document" "this" {
 
     actions = ["sts:AssumeRole"]
   }
-
-  tags = var.tags
 }
 
 resource "aws_iam_role" "this" {
