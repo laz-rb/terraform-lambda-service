@@ -10,11 +10,15 @@ data "aws_iam_policy_document" "this" {
 
     actions = ["sts:AssumeRole"]
   }
+
+  tags = var.tags
 }
 
 resource "aws_iam_role" "this" {
   name               = var.name
   assume_role_policy = data.aws_iam_policy_document.this.json
+
+  tags = var.tags
 }
 
 ############# Lambda #############
@@ -24,6 +28,8 @@ resource "aws_lambda_function" "this" {
   role          = aws_iam_role.this.arn
   handler       = var.handler
   filename      = var.filename
+
+  tags = var.tags
 }
 
 resource "aws_lambda_permission" "this" {
@@ -33,12 +39,16 @@ resource "aws_lambda_permission" "this" {
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${var.apigateway_execution_arn}/*/*"
+
+  tags = var.tags
 }
 
 ############# CloudWatch #############
 resource "aws_cloudwatch_log_group" "this" {
   name = "/aws/lambda/${var.name}"
   retention_in_days = var.cloudwatch_log_group_retention
+
+  tags = var.tags
 }
 
 ############# API GateWay #############
@@ -46,6 +56,8 @@ resource "aws_apigatewayv2_stage" "this" {
   name        = var.name
   api_id      = var.apigateway_api_id
   auto_deploy = true
+
+  tags = var.tags
 }
 
 resource "aws_apigatewayv2_integration" "this" {
@@ -54,6 +66,8 @@ resource "aws_apigatewayv2_integration" "this" {
   integration_uri    = aws_lambda_function.this.invoke_arn
   integration_type   = var.apigatewayv2_integration_type
   integration_method = var.apigateway_integration_method
+
+  tags = var.tags
 }
 
 resource "aws_apigatewayv2_route" "this" {
@@ -61,4 +75,6 @@ resource "aws_apigatewayv2_route" "this" {
 
   route_key = var.apigateway_route_key
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
+
+  tags = var.tags
 }
