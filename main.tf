@@ -62,7 +62,7 @@ resource "aws_apigatewayv2_integration" "this" {
   api_id = var.apigateway_api_id
 
   integration_uri    = aws_lambda_function.this.invoke_arn
-  integration_type   = var.apigatewayv2_integration_type
+  integration_type   = var.apigateway_integration_type
   integration_method = var.apigateway_integration_method
 
   tags = var.tags
