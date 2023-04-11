@@ -69,6 +69,4 @@ resource "aws_apigatewayv2_route" "this" {
 
   route_key = var.apigateway_route_key
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
-
-  tags = var.tags
 }
