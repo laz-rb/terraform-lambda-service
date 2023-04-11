@@ -31,3 +31,10 @@ resource "aws_cloudwatch_log_group" "this" {
   name = "/aws/lambda/${var.name}"
   retention_in_days = var.cloudwatch_log_group_retention
 }
+
+############# API GateWay #############
+resource "aws_apigatewayv2_stage" "dev" {
+  name        = "dev"
+  api_id      = aws_apigatewayv2_api.this.id
+  auto_deploy = true
+}
