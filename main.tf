@@ -37,8 +37,6 @@ resource "aws_lambda_permission" "this" {
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${var.apigateway_execution_arn}/*/*"
-
-  tags = var.tags
 }
 
 ############# CloudWatch #############
@@ -64,8 +62,6 @@ resource "aws_apigatewayv2_integration" "this" {
   integration_uri    = aws_lambda_function.this.invoke_arn
   integration_type   = var.apigateway_integration_type
   integration_method = var.apigateway_integration_method
-
-  tags = var.tags
 }
 
 resource "aws_apigatewayv2_route" "this" {
