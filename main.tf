@@ -67,6 +67,6 @@ resource "aws_apigatewayv2_integration" "this" {
 resource "aws_apigatewayv2_route" "this" {
   api_id = var.apigateway_api_id
 
-  route_key = var.apigateway_route_key
+  route_key = "${var.apigateway_route_key_method} ${var.apigateway_route_key_path}"
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
 }

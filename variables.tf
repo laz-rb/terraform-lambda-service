@@ -47,9 +47,15 @@ variable "apigateway_integration_method" {
   default = "POST"
 }
 
-variable "apigateway_route_key" {
+variable "apigateway_route_key_method" {
   type = string
-  description = "Route key for the route. For HTTP APIs, the route key can be a combination of an HTTP method and resource path, for example, GET /pets"
+  description = "Method for the route."
+}
+
+variable "apigateway_route_key_path" {
+  type = string
+  description = "Path for the route."
+  default = "/"
 }
 
 variable "tags" {
