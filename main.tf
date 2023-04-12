@@ -105,7 +105,6 @@ resource "aws_apigatewayv2_route" "this" {
 
 resource "aws_apigatewayv2_domain_name" "this" {
   count = var.custom_dns_enabled ? 1 : 0
-
   domain_name = var.custom_dns
 
   domain_name_configuration {
@@ -119,7 +118,6 @@ resource "aws_apigatewayv2_domain_name" "this" {
 
 resource "aws_apigatewayv2_api_mapping" "this" {
   count = var.custom_dns_enabled ? 1 : 0
-
   api_id      = var.apigateway_api_id
   domain_name = aws_apigatewayv2_domain_name.this.id
   stage       = aws_apigatewayv2_stage.this.id
@@ -130,7 +128,6 @@ resource "aws_apigatewayv2_api_mapping" "this" {
 #-----------------------------------------------------------
 resource "aws_acm_certificate" "this" {
   count = var.custom_dns_enabled ? 1 : 0
-
   domain_name       = var.custom_dns
   validation_method = "DNS"
 
@@ -139,7 +136,6 @@ resource "aws_acm_certificate" "this" {
 
 resource "aws_acm_certificate_validation" "this" {
   count = var.custom_dns_enabled ? 1 : 0
-
   certificate_arn         = aws_acm_certificate.this.arn
   validation_record_fqdns = [for record in aws_route53_record.api_validation : record.fqdn]
 }
@@ -149,7 +145,6 @@ resource "aws_acm_certificate_validation" "this" {
 #-----------------------------------------------------------
 data "aws_route53_zone" "this" {
   count = var.custom_dns_enabled ? 1 : 0
-
   name         = var.hosted_zone
   private_zone = false
 
@@ -158,7 +153,7 @@ data "aws_route53_zone" "this" {
 
 resource "aws_route53_record" "api_validation" {
   for_each = var.custom_dns_enabled ? {
-    for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.this[count.index].domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -170,12 +165,11 @@ resource "aws_route53_record" "api_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = data.aws_route53_zone.this[count.index].zone_id
+  zone_id         = data.aws_route53_zone.this.zone_id
 }
 
 resource "aws_route53_record" "api" {
   count = var.custom_dns_enabled ? 1 : 0
-
   name    = aws_apigatewayv2_domain_name.this.domain_name
   type    = "A"
   zone_id = data.aws_route53_zone.this[count.index].zone_id
