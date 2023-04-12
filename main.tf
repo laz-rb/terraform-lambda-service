@@ -147,7 +147,7 @@ resource "aws_route53_record" "api" {
 
   name    = aws_apigatewayv2_domain_name.this[count.index].domain_name
   type    = "A"
-  zone_id = module.certificate.hosted_zone_id
+  zone_id = module.certificate[count.index].hosted_zone_id
 
   alias {
     name                   = aws_apigatewayv2_domain_name.this[count.index].domain_name_configuration[0].target_domain_name
