@@ -108,12 +108,12 @@ resource "aws_apigatewayv2_domain_name" "this" {
   domain_name = var.custom_dns
 
   domain_name_configuration {
-    certificate_arn = aws_acm_certificate.this.arn
+    certificate_arn = module.certificate.certificate_arn
     endpoint_type   = "REGIONAL"
     security_policy = "TLS_1_2"
   }
 
-  depends_on = [aws_acm_certificate_validation.this]
+  depends_on = [module.certificate]
 }
 
 resource "aws_apigatewayv2_api_mapping" "this" {
@@ -124,53 +124,27 @@ resource "aws_apigatewayv2_api_mapping" "this" {
 }
 
 #-----------------------------------------------------------
-# AWS Certificate Manger
+# Certificate
 #-----------------------------------------------------------
-resource "aws_acm_certificate" "this" {
+module "certificate" {
   count = var.custom_dns_enabled ? 1 : 0
-  domain_name       = var.custom_dns
-  validation_method = "DNS"
+  
+  source = "./modules/certificate"
+
+  custom_dns = var.custom_dns
+  hosted_zone = var.hosted_zone
 
   tags = var.tags
-}
-
-resource "aws_acm_certificate_validation" "this" {
-  count = var.custom_dns_enabled ? 1 : 0
-  certificate_arn         = aws_acm_certificate.this.arn
-  validation_record_fqdns = [for record in aws_route53_record.api_validation : record.fqdn]
 }
 
 #-----------------------------------------------------------
 # Route53
 #-----------------------------------------------------------
-data "aws_route53_zone" "this" {
-  count = var.custom_dns_enabled ? 1 : 0
-  name         = var.hosted_zone
-  private_zone = false
-}
-
-resource "aws_route53_record" "api_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
-  allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
-  ttl             = 60
-  type            = each.value.type
-  zone_id         = data.aws_route53_zone.this.zone_id
-}
-
 resource "aws_route53_record" "api" {
   count = var.custom_dns_enabled ? 1 : 0
   name    = aws_apigatewayv2_domain_name.this.domain_name
   type    = "A"
-  zone_id = data.aws_route53_zone.this[count.index].zone_id
+  zone_id = module.certificate.hosted_zone_id
 
   alias {
     name                   = aws_apigatewayv2_domain_name.this.domain_name_configuration[0].target_domain_name
