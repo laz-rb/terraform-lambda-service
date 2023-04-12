@@ -10,6 +10,18 @@ data "aws_iam_policy_document" "this" {
 
     actions = ["sts:AssumeRole"]
   }
+
+  statement {
+    efeffect = "Allow"  
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = [
+      "arn:aws:logs:*:*:*"
+    ]
+  }
 }
 
 resource "aws_iam_role" "this" {
