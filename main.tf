@@ -152,13 +152,13 @@ data "aws_route53_zone" "this" {
 }
 
 resource "aws_route53_record" "api_validation" {
-  for_each = var.custom_dns_enabled ? {
+  for_each = {
     for dvo in aws_acm_certificate.this[count.index].domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
     }
-  } : {}
+  }
 
   allow_overwrite = true
   name            = each.value.name
