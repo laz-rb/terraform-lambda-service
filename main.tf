@@ -107,7 +107,7 @@ resource "aws_apigatewayv2_api_mapping" "this" {
   count = var.custom_dns_enabled ? 1 : 0
 
   api_id      = var.apigateway_api_id
-  domain_name = aws_apigatewayv2_domain_name.this.id
+  domain_name = aws_apigatewayv2_domain_name.this[count.index].id
   stage       = aws_apigatewayv2_stage.this.id
 }
 
@@ -122,7 +122,7 @@ resource "aws_apigatewayv2_domain_name" "this" {
     security_policy = "TLS_1_2"
   }
 
-  depends_on = [module.certificate]
+  depends_on = [module.certificate[count.index]]
 }
 
 #-----------------------------------------------------------
@@ -145,13 +145,13 @@ module "certificate" {
 resource "aws_route53_record" "api" {
   count = var.custom_dns_enabled ? 1 : 0
 
-  name    = aws_apigatewayv2_domain_name.this.domain_name
+  name    = aws_apigatewayv2_domain_name.this[count.index].domain_name
   type    = "A"
   zone_id = module.certificate.hosted_zone_id
 
   alias {
-    name                   = aws_apigatewayv2_domain_name.this.domain_name_configuration[0].target_domain_name
-    zone_id                = aws_apigatewayv2_domain_name.this.domain_name_configuration[0].hosted_zone_id
+    name                   = aws_apigatewayv2_domain_name.this[count.index].domain_name_configuration[0].target_domain_name
+    zone_id                = aws_apigatewayv2_domain_name.this[count.index].domain_name_configuration[0].hosted_zone_id
     evaluate_target_health = false
   }
 }
