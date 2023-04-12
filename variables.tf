@@ -72,12 +72,12 @@ variable "custom_dns_enabled" {
 
 variable "custom_dns" {
   type = string
-  description = "(optional) describe your variable"
+  description = "(Optional) Domain name. Must be between 1 and 512 characters in length."
   default = ""
 }
 
 variable "hosted_zone" {
   type = string
-  description = "(optional) describe your variable"
+  description = "(Optional) Hosted Zone name of the desired Hosted Zone."
   default = ""
 }

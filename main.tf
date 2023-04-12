@@ -142,7 +142,7 @@ module "certificate" {
 #-----------------------------------------------------------
 # Route53
 #-----------------------------------------------------------
-resource "aws_route53_record" "api" {
+resource "aws_route53_record" "this" {
   count = var.custom_dns_enabled ? 1 : 0
 
   name    = aws_apigatewayv2_domain_name.this[count.index].domain_name
@@ -154,4 +154,6 @@ resource "aws_route53_record" "api" {
     zone_id                = aws_apigatewayv2_domain_name.this[count.index].domain_name_configuration[0].hosted_zone_id
     evaluate_target_health = false
   }
+
+  depends_on = [module.certificate]
 }
