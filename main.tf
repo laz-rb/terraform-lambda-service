@@ -119,7 +119,7 @@ resource "aws_apigatewayv2_domain_name" "this" {
 
 resource "aws_apigatewayv2_api_mapping" "this" {
   count = var.custom_dns_enabled ? 1 : 0
-  
+
   api_id      = var.apigateway_api_id
   domain_name = aws_apigatewayv2_domain_name.this.id
   stage       = aws_apigatewayv2_stage.this.id
@@ -157,15 +157,13 @@ data "aws_route53_zone" "this" {
 }
 
 resource "aws_route53_record" "api_validation" {
-  count = var.custom_dns_enabled ? 1 : 0
-
-  for_each = {
+  for_each = var.custom_dns_enabled ? {
     for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
     }
-  }
+  } : {}
 
   allow_overwrite = true
   name            = each.value.name
