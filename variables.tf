@@ -79,4 +79,5 @@ variable "custom_dns" {
 variable "hosted_zone" {
   type = string
   description = "(optional) describe your variable"
+  default = ""
 }
