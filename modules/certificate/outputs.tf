@@ -3,5 +3,5 @@ output "hosted_zone_id" {
 }
 
 output "certificate_arn" {
-  value = join("", aws_acm_certificate.this.*.arn)
+  value = toset(aws_acm_certificate.this[*].arn)
 }
