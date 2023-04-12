@@ -117,7 +117,7 @@ resource "aws_apigatewayv2_domain_name" "this" {
   domain_name = var.custom_dns
 
   domain_name_configuration {
-    certificate_arn = module.certificate.certificate_arn
+    certificate_arn = module.certificate[count.index].certificate_arn
     endpoint_type   = "REGIONAL"
     security_policy = "TLS_1_2"
   }
