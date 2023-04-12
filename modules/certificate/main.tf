@@ -31,3 +31,15 @@ resource "aws_acm_certificate_validation" "this" {
   certificate_arn         = aws_acm_certificate.this.arn
   validation_record_fqdns = [for record in aws_route53_record.this : record.fqdn]
 }
+
+resource "aws_apigatewayv2_domain_name" "this" {
+  domain_name = var.custom_dns
+
+  domain_name_configuration {
+    certificate_arn = aws_acm_certificate.this.arn
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+
+  depends_on = [aws_acm_certificate.this]
+}

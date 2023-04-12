@@ -103,19 +103,6 @@ resource "aws_apigatewayv2_route" "this" {
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
 }
 
-resource "aws_apigatewayv2_domain_name" "this" {
-  count = var.custom_dns_enabled ? 1 : 0
-  domain_name = var.custom_dns
-
-  domain_name_configuration {
-    certificate_arn = module.certificate.certificate_arn
-    endpoint_type   = "REGIONAL"
-    security_policy = "TLS_1_2"
-  }
-
-  depends_on = [module.certificate]
-}
-
 resource "aws_apigatewayv2_api_mapping" "this" {
   count = var.custom_dns_enabled ? 1 : 0
   api_id      = var.apigateway_api_id
