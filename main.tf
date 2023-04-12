@@ -165,7 +165,7 @@ resource "aws_route53_record" "api_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = data.aws_route53_zone.this.zone_id
+  zone_id         = data.aws_route53_zone.this[count.index].zone_id
 }
 
 resource "aws_route53_record" "api" {
