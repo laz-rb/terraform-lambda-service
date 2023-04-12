@@ -122,7 +122,7 @@ resource "aws_apigatewayv2_domain_name" "this" {
     security_policy = "TLS_1_2"
   }
 
-  depends_on = [module.certificate[count.index]]
+  depends_on = [module.certificate]
 }
 
 #-----------------------------------------------------------
