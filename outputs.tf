@@ -4,6 +4,6 @@ output "apigateway_url" {
 }
 
 output "custom_dns_url" {
-  value = join("", aws_apigatewayv2_api_mapping.this[*].domain_name)
+  value = join("", ["https://", aws_apigatewayv2_api_mapping.this[0].domain_name, var.apigateway_route_key_path])
   description = "Custom DNS URL"
 }
