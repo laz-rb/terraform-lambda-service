@@ -63,3 +63,20 @@ variable "tags" {
   description = "Tags applied to all resources."
   default     = {}
 }
+
+variable "custom_dns_enabled" {
+  type = bool
+  description = "(Optional) Enable custom DNS resources."
+  default = true
+}
+
+variable "custom_dns" {
+  type = string
+  description = "(optional) describe your variable"
+  default = ""
+}
+
+variable "hosted_zone" {
+  type = string
+  description = "(optional) describe your variable"
+}
