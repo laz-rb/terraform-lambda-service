@@ -23,8 +23,8 @@ resource "aws_iam_role" "this" {
 
 data "aws_iam_policy_document" "logs" {
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+    actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents"
@@ -49,8 +49,8 @@ data "aws_iam_policy_document" "vpc" {
   count = var.custom_vpc_enabled ? 1 : 0
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+    actions = [
       "ec2:CreateNetworkInterface",
       "ec2:DescribeNetworkInterfaces",
       "ec2:DeleteNetworkInterface",
@@ -89,7 +89,7 @@ resource "aws_lambda_function" "this" {
 
   vpc_config {
     security_group_ids = var.security_groups_ids
-    subnet_ids = var.subnet_ids
+    subnet_ids         = var.subnet_ids
   }
 
   tags = var.tags
@@ -108,7 +108,7 @@ resource "aws_lambda_permission" "this" {
 # CloudWatch
 #-----------------------------------------------------------
 resource "aws_cloudwatch_log_group" "this" {
-  name = "/aws/lambda/${var.name}"
+  name              = "/aws/lambda/${var.name}"
   retention_in_days = var.cloudwatch_log_group_retention
 
   tags = var.tags
@@ -167,10 +167,10 @@ resource "aws_apigatewayv2_domain_name" "this" {
 #-----------------------------------------------------------
 module "certificate" {
   count = var.custom_dns_enabled ? 1 : 0
-  
+
   source = "./modules/certificate"
 
-  custom_dns = var.custom_dns
+  custom_dns  = var.custom_dns
   hosted_zone = var.hosted_zone
 
   tags = var.tags
