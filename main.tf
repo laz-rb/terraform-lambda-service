@@ -45,6 +45,38 @@ resource "aws_iam_role_policy_attachment" "logs" {
   policy_arn = aws_iam_policy.logs.arn
 }
 
+data "aws_iam_policy_document" "vpc" {
+  count = var.custom_vpc_enabled ? 1 : 0
+
+  statement {
+    effect    = "Allow"
+    actions   = [
+      "ec2:CreateNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DeleteNetworkInterface",
+      "ec2:AssignPrivateIpAddress",
+      "ec2:UnassignPrivateIpAddress"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "vpc" {
+  count = var.custom_vpc_enabled ? 1 : 0
+
+  name        = "${var.name}-vpc"
+  description = "Permissions required to use custom VPC from Lambda"
+  policy      = data.aws_iam_policy_document.vpc[count.index].json
+  tags        = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "vpc" {
+  count = var.custom_vpc_enabled ? 1 : 0
+
+  role       = aws_iam_role.this.name
+  policy_arn = aws_iam_policy.vpc[count.index].arn
+}
+
 #-----------------------------------------------------------
 # Lambda
 #-----------------------------------------------------------
@@ -54,6 +86,11 @@ resource "aws_lambda_function" "this" {
   role          = aws_iam_role.this.arn
   handler       = var.handler
   filename      = var.filename
+
+  vpc_config {
+    security_group_ids = var.security_groups_ids
+    subnet_ids = var.subnet_ids
+  }
 
   tags = var.tags
 }

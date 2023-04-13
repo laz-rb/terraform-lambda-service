@@ -67,7 +67,7 @@ variable "tags" {
 variable "custom_dns_enabled" {
   type = bool
   description = "(Optional) Enable custom DNS resources."
-  default = true
+  default = false
 }
 
 variable "custom_dns" {
@@ -80,4 +80,22 @@ variable "hosted_zone" {
   type = string
   description = "(Optional) Hosted Zone name of the desired Hosted Zone."
   default = ""
+}
+
+variable "custom_vpc_enabled" {
+  type = bool
+  description = "(Optional) Enable deployment of the Lambda function to a custom VPC."
+  default = false
+}
+
+variable "security_groups_ids" {
+  type = list(string)
+  description = "(Optional) List of security group IDs associated with the Lambda function."
+  default = []
+}
+
+variable "subnet_ids" {
+  type = list(string)
+  description = "(Optional) List of subnet IDs associated with the Lambda function."
+  default = []
 }
