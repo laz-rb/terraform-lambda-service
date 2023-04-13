@@ -1,3 +1,15 @@
+#-----------------------------------------------------------
+# Common
+#-----------------------------------------------------------
+variable "tags" {
+  type        = map(string)
+  description = "Tags applied to all resources."
+  default     = {}
+}
+
+#-----------------------------------------------------------
+# Lambda
+#-----------------------------------------------------------
 variable "name" {
   type        = string
   description = "Name of the service. This name will be used in all resources"
@@ -19,12 +31,18 @@ variable "filename" {
   description = "Path to the function's deployment package within the local filesystem. Exactly one of filename, image_uri, or s3_bucket must be specified"
 }
 
+#-----------------------------------------------------------
+# CloudWatch Logs
+#-----------------------------------------------------------
 variable "cloudwatch_log_group_retention" {
   type        = number
   description = "(Optional) Specifies the number of days you want to retain log events in the specified log group. Possible values are: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653, and 0. If you select 0, the events in the log group are always retained and never expire."
   default     = 14
 }
 
+#-----------------------------------------------------------
+# API Gateway
+#-----------------------------------------------------------
 variable "apigateway_api_id" {
   type        = string
   description = "API identifier."
@@ -58,18 +76,15 @@ variable "apigateway_route_key_path" {
   default     = "/"
 }
 
-variable "tags" {
-  type        = map(string)
-  description = "Tags applied to all resources."
-  default     = {}
-}
-
 variable "custom_dns_enabled" {
   type        = bool
   description = "(Optional) Enable custom DNS resources."
   default     = false
 }
 
+#-----------------------------------------------------------
+# Route53
+#-----------------------------------------------------------
 variable "custom_dns" {
   type        = string
   description = "(Optional) Domain name. Must be between 1 and 512 characters in length."
@@ -82,6 +97,9 @@ variable "hosted_zone" {
   default     = ""
 }
 
+#-----------------------------------------------------------
+# VPC
+#-----------------------------------------------------------
 variable "custom_vpc_enabled" {
   type        = bool
   description = "(Optional) Enable deployment of the Lambda function to a custom VPC."
