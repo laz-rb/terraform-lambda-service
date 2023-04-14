@@ -1,6 +1,11 @@
 #-----------------------------------------------------------
 # Common
 #-----------------------------------------------------------
+variable "name" {
+  type        = string
+  description = "Name of the API. This name will be used in all resources"
+}
+
 variable "tags" {
   type        = map(string)
   description = "Tags applied to all resources."
@@ -10,11 +15,6 @@ variable "tags" {
 #-----------------------------------------------------------
 # Lambda
 #-----------------------------------------------------------
-variable "name" {
-  type        = string
-  description = "Name of the service. This name will be used in all resources"
-}
-
 variable "runtime" {
   type        = string
   description = "(Optional) Identifier of the function's runtime. See [Runtimes](https://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-Runtime) for valid values."
@@ -29,6 +29,12 @@ variable "handler" {
 variable "filename" {
   type        = string
   description = "Path to the function's deployment package within the local filesystem. Exactly one of filename, image_uri, or s3_bucket must be specified"
+}
+
+variable "environment_variables" {
+  type        = map(string)
+  description = "(Optional) Map of environment variables that are accessible from the function code during execution. If provided at least one key must be present."
+  default     = {}
 }
 
 #-----------------------------------------------------------

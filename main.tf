@@ -87,6 +87,10 @@ resource "aws_lambda_function" "this" {
   handler       = var.handler
   filename      = var.filename
 
+  environment {
+    variables = var.environment_variables
+  }
+
   vpc_config {
     security_group_ids = var.security_groups_ids
     subnet_ids         = var.subnet_ids
