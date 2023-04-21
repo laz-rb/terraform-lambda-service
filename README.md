@@ -1,3 +1,3 @@
-# terraform-serverless-api
+# tf-aws-serverless-api
 
-Terraform module to spin up serverless APIs using Lambda, API Gateway and Route 53.
+Terraform module to spin up serverless APIs using Lambda and API Gateway.

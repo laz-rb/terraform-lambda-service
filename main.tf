@@ -121,14 +121,6 @@ resource "aws_cloudwatch_log_group" "this" {
 #-----------------------------------------------------------
 # API Gateway
 #-----------------------------------------------------------
-resource "aws_apigatewayv2_stage" "this" {
-  name        = var.name
-  api_id      = var.apigateway_api_id
-  auto_deploy = true
-
-  tags = var.tags
-}
-
 resource "aws_apigatewayv2_integration" "this" {
   api_id = var.apigateway_api_id
 
@@ -142,59 +134,4 @@ resource "aws_apigatewayv2_route" "this" {
 
   route_key = "${var.apigateway_route_key_method} ${var.apigateway_route_key_path}"
   target    = "integrations/${aws_apigatewayv2_integration.this.id}"
-}
-
-resource "aws_apigatewayv2_api_mapping" "this" {
-  count = var.custom_dns_enabled ? 1 : 0
-
-  api_id      = var.apigateway_api_id
-  domain_name = aws_apigatewayv2_domain_name.this[count.index].id
-  stage       = aws_apigatewayv2_stage.this.id
-}
-
-resource "aws_apigatewayv2_domain_name" "this" {
-  count = var.custom_dns_enabled ? 1 : 0
-
-  domain_name = var.custom_dns
-
-  domain_name_configuration {
-    certificate_arn = module.certificate[count.index].certificate_arn
-    endpoint_type   = "REGIONAL"
-    security_policy = "TLS_1_2"
-  }
-
-  depends_on = [module.certificate]
-}
-
-#-----------------------------------------------------------
-# Certificate
-#-----------------------------------------------------------
-module "certificate" {
-  count = var.custom_dns_enabled ? 1 : 0
-
-  source = "./modules/certificate"
-
-  custom_dns  = var.custom_dns
-  hosted_zone = var.hosted_zone
-
-  tags = var.tags
-}
-
-#-----------------------------------------------------------
-# Route53
-#-----------------------------------------------------------
-resource "aws_route53_record" "this" {
-  count = var.custom_dns_enabled ? 1 : 0
-
-  name    = aws_apigatewayv2_domain_name.this[count.index].domain_name
-  type    = "A"
-  zone_id = module.certificate[count.index].hosted_zone_id
-
-  alias {
-    name                   = aws_apigatewayv2_domain_name.this[count.index].domain_name_configuration[0].target_domain_name
-    zone_id                = aws_apigatewayv2_domain_name.this[count.index].domain_name_configuration[0].hosted_zone_id
-    evaluate_target_health = false
-  }
-
-  depends_on = [module.certificate]
 }
