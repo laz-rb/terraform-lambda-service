@@ -21,7 +21,8 @@ resource "aws_iam_role" "this" {
   tags = var.tags
 }
 
-data "aws_iam_policy_document" "logs" {
+data "aws_iam_policy_document" "this" {
+  // CloudWatch Logs permissions
   statement {
     effect = "Allow"
     actions = [
@@ -29,52 +30,37 @@ data "aws_iam_policy_document" "logs" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = ["arn:aws:logs:*:*:*"]
-  }
-}
-
-resource "aws_iam_policy" "logs" {
-  name        = "${var.name}-logs"
-  description = "Write logs from Lambda"
-  policy      = data.aws_iam_policy_document.logs.json
-  tags        = var.tags
-}
-
-resource "aws_iam_role_policy_attachment" "logs" {
-  role       = aws_iam_role.this.name
-  policy_arn = aws_iam_policy.logs.arn
-}
-
-data "aws_iam_policy_document" "vpc" {
-  count = var.custom_vpc_enabled ? 1 : 0
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "ec2:CreateNetworkInterface",
-      "ec2:DescribeNetworkInterfaces",
-      "ec2:DeleteNetworkInterface",
-      "ec2:AssignPrivateIpAddress",
-      "ec2:UnassignPrivateIpAddress"
-    ]
     resources = ["*"]
   }
+
+  // VPC permissions
+  dynamic "statement" {
+    for_each = var.custom_vpc_enabled ? [1] : []
+    content {
+      effect = "Allow"
+      actions = [
+        "ec2:CreateNetworkInterface",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DeleteNetworkInterface",
+        "ec2:AssignPrivateIpAddress",
+        "ec2:UnassignPrivateIpAddress"
+      ]
+      resources = ["*"]
+    }
+  }
 }
 
-resource "aws_iam_policy" "vpc" {
-  count = var.custom_vpc_enabled ? 1 : 0
+resource "aws_iam_policy" "this" {
+  name        = var.name
+  description = "Lambda execution permissions"
+  policy      = data.aws_iam_policy_document.this.json
 
-  name        = "${var.name}-vpc"
-  description = "Permissions required to use custom VPC from Lambda"
-  policy      = data.aws_iam_policy_document.vpc[count.index].json
-  tags        = var.tags
+  tags = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "vpc" {
-  count = var.custom_vpc_enabled ? 1 : 0
-
+resource "aws_iam_role_policy_attachment" "this" {
   role       = aws_iam_role.this.name
-  policy_arn = aws_iam_policy.vpc[count.index].arn
+  policy_arn = aws_iam_policy.this.arn
 }
 
 #-----------------------------------------------------------
