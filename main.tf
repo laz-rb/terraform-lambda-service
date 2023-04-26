@@ -67,11 +67,12 @@ resource "aws_iam_role_policy_attachment" "this" {
 # Lambda
 #-----------------------------------------------------------
 resource "aws_lambda_function" "this" {
-  function_name = var.name
-  runtime       = var.runtime
-  role          = aws_iam_role.this.arn
-  handler       = var.handler
-  filename      = var.filename
+  function_name    = var.name
+  runtime          = var.runtime
+  role             = aws_iam_role.this.arn
+  handler          = var.handler
+  filename         = var.filename
+  source_code_hash = filebase64sha256(var.filename)
 
   environment {
     variables = var.environment_variables
