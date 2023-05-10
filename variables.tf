@@ -49,6 +49,12 @@ variable "cloudwatch_log_group_retention" {
 #-----------------------------------------------------------
 # API Gateway
 #-----------------------------------------------------------
+variable "apigateway_version" {
+  type        = string
+  description = "(Optional) Type of the API Gateway. Use v1 for REST APIs and v2 for HTTP/WEBSOCKET APIs."
+  default     = "v2"
+}
+
 variable "apigateway_api_id" {
   type        = string
   description = "(Required) API identifier."
@@ -57,6 +63,12 @@ variable "apigateway_api_id" {
 variable "apigateway_execution_arn" {
   type        = string
   description = "(Required) ARN prefix to be used in an aws_lambda_permission's source_arn attribute or in an aws_iam_policy to authorize access to the @connections API. See the Amazon [API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-control-access-iam.html) for details."
+}
+
+variable "apigateway_root_resource_id" {
+  type        = string
+  description = "(Optional) Only for API Gateway v1. Set to the ID of the API Gateway Resource on the found REST API where the route matches '/'."
+  default     = null
 }
 
 variable "apigateway_integration_type" {
@@ -79,7 +91,25 @@ variable "apigateway_route_key_method" {
 variable "apigateway_route_key_path" {
   type        = string
   description = "(Optional) Path for the route. This route will be attached to end API Gateway or custom DNS endpoint."
-  default     = "/"
+  default     = ""
+}
+
+variable "custom_domain_enabled" {
+  type        = bool
+  description = "(Optional) If you want a custom domain name for your resource. You must have a Custom Domain in your API."
+  default     = false
+}
+
+variable "custom_domain_name" {
+  type        = string
+  description = "(Optional) Domain name. Must be between 1 and 512 characters in length."
+  default     = ""
+}
+
+variable "allowed_ips" {
+  type        = list(string)
+  description = "(Optional) Only for v1 APIs. List of IP addresses in CIDR notation that are allowed to call your API. Default allows the traffic from any IP."
+  default     = null
 }
 
 #-----------------------------------------------------------

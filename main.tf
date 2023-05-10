@@ -63,6 +63,40 @@ resource "aws_iam_role_policy_attachment" "this" {
   policy_arn = aws_iam_policy.this.arn
 }
 
+data "aws_iam_policy_document" "rest_api_policy" {
+  count = var.apigateway_version == "v1" && var.allowed_ips != null ? 1 : 0
+
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions   = ["execute-api:Invoke"]
+    resources = ["execute-api:/*/*/*"]
+  }
+
+  statement {
+    effect = "Deny"
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+    actions   = ["execute-api:Invoke"]
+    resources = ["execute-api:/*/*/*"]
+
+    condition {
+      test     = "NotIpAddress"
+      variable = "aws:SourceIp"
+      values   = var.allowed_ips
+    }
+  }
+}
+
 #-----------------------------------------------------------
 # Lambda
 #-----------------------------------------------------------
@@ -106,9 +140,97 @@ resource "aws_cloudwatch_log_group" "this" {
 }
 
 #-----------------------------------------------------------
-# API Gateway
+# API Gateway v1
+#-----------------------------------------------------------
+data "aws_api_gateway_domain_name" "this" {
+  count = var.apigateway_version == "v1" && var.custom_domain_enabled ? 1 : 0
+
+  domain_name = var.custom_domain_name
+}
+
+resource "aws_api_gateway_resource" "this" {
+  count = var.apigateway_version == "v1" ? 1 : 0
+
+  rest_api_id = var.apigateway_api_id
+  parent_id   = var.apigateway_root_resource_id
+  path_part   = var.apigateway_route_key_path
+}
+
+resource "aws_api_gateway_method" "this" {
+  count = var.apigateway_version == "v1" ? 1 : 0
+
+  rest_api_id   = var.apigateway_api_id
+  resource_id   = aws_api_gateway_resource.this[count.index].id
+  http_method   = var.apigateway_route_key_method
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "this" {
+  count = var.apigateway_version == "v1" ? 1 : 0
+
+  rest_api_id             = var.apigateway_api_id
+  resource_id             = aws_api_gateway_resource.this[count.index].id
+  http_method             = aws_api_gateway_method.this[count.index].http_method
+  integration_http_method = var.apigateway_integration_method
+  type                    = var.apigateway_integration_type
+  uri                     = aws_lambda_function.this.invoke_arn
+}
+
+resource "aws_api_gateway_deployment" "this" {
+  count = var.apigateway_version == "v1" ? 1 : 0
+
+  rest_api_id = var.apigateway_api_id
+
+  triggers = {
+    # NOTE: The configuration below will satisfy ordering considerations,
+    #       but not pick up all future REST API changes. More advanced patterns
+    #       are possible, such as using the filesha1() function against the
+    #       Terraform configuration file(s) or removing the .id references to
+    #       calculate a hash against whole resources. Be aware that using whole
+    #       resources will show a difference after the initial implementation.
+    #       It will stabilize to only change when resources change afterwards.
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.this[count.index].id,
+      aws_api_gateway_method.this[count.index].id,
+      aws_api_gateway_integration.this[count.index].id,
+    ]))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_api_gateway_stage" "this" {
+  count = var.apigateway_version == "v1" ? 1 : 0
+
+  deployment_id = aws_api_gateway_deployment.this[count.index].id
+  rest_api_id   = var.apigateway_api_id
+  stage_name    = var.name
+}
+
+resource "aws_api_gateway_base_path_mapping" "this" {
+  count = var.apigateway_version == "v1" && var.custom_domain_enabled ? 1 : 0
+
+  api_id      = var.apigateway_api_id
+  stage_name  = aws_api_gateway_stage.this[count.index].stage_name
+  domain_name = data.aws_api_gateway_domain_name.this[count.index].domain_name
+  base_path   = aws_api_gateway_stage.this[count.index].stage_name
+}
+
+resource "aws_api_gateway_rest_api_policy" "this" {
+  count = var.apigateway_version == "v1" && var.allowed_ips != null ? 1 : 0
+
+  rest_api_id = var.apigateway_api_id
+  policy      = data.aws_iam_policy_document.rest_api_policy[count.index].json
+}
+
+#-----------------------------------------------------------
+# API Gateway v2
 #-----------------------------------------------------------
 resource "aws_apigatewayv2_integration" "this" {
+  count = var.apigateway_version == "v2" ? 1 : 0
+
   api_id = var.apigateway_api_id
 
   integration_uri    = aws_lambda_function.this.invoke_arn
@@ -117,8 +239,10 @@ resource "aws_apigatewayv2_integration" "this" {
 }
 
 resource "aws_apigatewayv2_route" "this" {
+  count = var.apigateway_version == "v2" ? 1 : 0
+
   api_id = var.apigateway_api_id
 
-  route_key = "${var.apigateway_route_key_method} ${var.apigateway_route_key_path}"
-  target    = "integrations/${aws_apigatewayv2_integration.this.id}"
+  route_key = "${var.apigateway_route_key_method} /${var.apigateway_route_key_path}"
+  target    = "integrations/${aws_apigatewayv2_integration.this[count.index].id}"
 }
